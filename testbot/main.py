@@ -8,10 +8,11 @@ import discord
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
 
+import funcs
 
 # LOADS THE .ENV FILE THAT RESIDES ON THE SAME LEVEL AS THE SCRIPT.
 load_dotenv()
-import funcs
+
 
 
 ##variables and stuff
@@ -30,10 +31,12 @@ workingDex = fullDex.copy()
 ##functions
 
 
-def win():
+async def win(message, target):
 	print("Dub Achieved")
+	await message.channel.send("YOU GOT IT!\n name: {a}\tgen: {b}\ttypes: {c}/{d}\theight: {e}\tweight: {f}\n you managed to narrow it down to {g} pokemon".format(a=target[0],b=target[1],c=target[2],d=target[3],e=target[4],f=target[5],g=guessStat[5][5]))
 
-def lose():
+
+async def lose(message, target):
 	print("you are bad at this")
 
 
@@ -105,17 +108,18 @@ async def on_message(message):
 			await message.channel.send("I've never encountered a pokemon by that name... Are you sure that's its name?")
 			return
 		if target == guesses[guessTracker]: 
-			win()
+			await win(message, target)
 			return
 		elif guessTracker == 5: 
-			lose()
+			await lose(message,target,guesses,guessStat,workingDex)
 			return
 		cg = guesses[guessTracker]
 		funcs.genCheck(cg, target, guessStat, guessTracker)
 		funcs.typeCheck(cg, target, guessStat, guessTracker)
 		funcs.heightCheck(cg, target, guessStat, guessTracker)
 		funcs.weightCheck(cg, target, guessStat, guessTracker)
-		await funcs.printGame(guessTracker,guessStat,guesses, message)
+		funcs.cutDex(cg, workingDex.copy(), guessStat, guessTracker, workingDex)
+		await funcs.printGame(guessTracker,guessStat, guesses, message)
 		guessTracker = guessTracker+1
 		print("guess complete, fail to get " + target[0])
 		

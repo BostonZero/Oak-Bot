@@ -20,9 +20,8 @@ def pickTarget(fd):
 	logging.info("{a} selected as target".format(a = temp[0]))
 	return temp
 
-
 async def printGame(guessTracker,guessStat,guesses, message):
-	outString = "Gen\tType 1\tType 2\tHeight\tWeight\tName"
+	outString = "Gen\tType 1\tType 2\tHeight\tWeight\tName\teliminated"
 	for num in range(guessTracker+1):
 		lineSet = "\n"
 		
@@ -62,7 +61,7 @@ async def printGame(guessTracker,guessStat,guesses, message):
 				lineSet= lineSet + "🔼\t"
 			case 1:
 				lineSet= lineSet + "🔽\t"
-		lineSet= lineSet + guesses[num][0]
+		lineSet= lineSet + guesses[num][0] + str(guessStat[num][5])
 		outString= outString + lineSet
 	await message.channel.send(outString)
 
@@ -118,3 +117,152 @@ def loadDex():
             dex.append(temp)
         dex.remove(dex[0])
     return dex.copy()
+
+def cutDex(g, wd, guessStat, guessTracker, workingDex):
+	oldSize = len(wd)
+	for entry in wd:
+		#check gen
+		if guessStat[guessTracker][0] == 0:
+			if int(g[1]) == int(entry[1]):
+				pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a generation ruleout. {b} should equal {c} but is not".format(a = entry[0], b = g[1], c = entry[1]))
+					workingDex.remove(entry) 
+				except ValueError: 
+					pass
+				continue
+		elif guessStat[guessTracker][0] == 1:
+			if int(g[1]) > int(entry[1]):
+				pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a generation ruleout. {b} should be greater than {c} but is not".format(a = entry[0], b = g[1], c = entry[1]))
+					workingDex.remove(entry) 
+				except ValueError: 
+					pass
+				continue
+		elif guessStat[guessTracker][0] == -1:
+			if int(g[1]) < int(entry[1]):
+				pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a generation ruleout. {b} should be less than {c} but is not".format(a = entry[0], b = g[1], c = entry[1]))
+					workingDex.remove(entry) 
+				except ValueError: 
+					pass
+				continue
+
+		#check height
+		if guessStat[guessTracker][3] == 0:
+			if float(g[4]) == float(entry[4]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a height ruleout. {b}({c}) should equal {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[4],d = entry[4]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][3] == 1:
+			if float(g[4]) > float(entry[4]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a height ruleout. {b}({c}) should be greater than {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[4],d = entry[4]))
+					workingDex.remove(entry)
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][3] == -1:
+			if float(g[4]) < float(entry[4]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a height ruleout. {b}({c}) should be greater than {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[4],d = entry[4]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+
+		#check weight
+		if guessStat[guessTracker][4] == 0:
+			if float(g[5]) == float(entry[5]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a weight ruleout. {b}({c}) should be equal to {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[5],d = entry[5]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][4] == 1:
+			if float(g[5]) > float(entry[5]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a weight ruleout. {b}({c}) should be greater than {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[5],d = entry[5]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][4] == -1:
+			if float(g[5]) < float(entry[5]): pass
+			else: 
+				try:
+					logging.debug("deleting entry for {a} for a weight ruleout. {b}({c}) should be less than {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[5],d = entry[5]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+
+
+		#check type1
+		if guessStat[guessTracker][1] == -1:
+			if g[2] == entry[3]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type1(switch) ruleout. {b}({c}) should be the same as {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[2],d = entry[3]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][1] == 0:
+			if g[2] == entry[2]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type1(match) ruleout. {b}({c}) should be the same as {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[2],d = entry[2]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][1] == 1:
+			if g[2] != entry[2]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type1(false) ruleout. {b}({c}) should be different from {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[2],d = entry[2]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+
+		#check type2
+		if guessStat[guessTracker][2] == -1:
+			if g[3] == entry[2]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type2(switch) ruleout. {b}({c}) should be the same as {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[3],d = entry[2]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][2] == 0:
+			if g[3] == entry[3]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type1(match) ruleout. {b}({c}) should be the same as {a}({d}) but is not".format(a = entry[0], b = g[0],c = g[3],d = entry[3]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+		elif guessStat[guessTracker][2] == 1:
+			if g[3] != entry[3]: pass
+			else: 
+				try: 
+					logging.debug("deleting entry for {a} for a type1(false) ruleout. {b}({c}) should be different from{a}({d}) but is not".format(a = entry[0], b = g[0],c = g[3],d = entry[3]))
+					workingDex.remove(entry) 
+				except ValueError: pass
+				continue
+
+
+
+
+
+
+	logging.info("old wd size: {a}\t new wd size: {b}\t elimation this round: {c}".format(a = str(oldSize), b = str(len(workingDex)),c = str(oldSize-len(workingDex))))
+	print("\n" + str(oldSize) + "-" + str(len(workingDex)) + " = " + str(oldSize-len(workingDex)) + " eliminated!")
+	guessStat[guessTracker][5] = oldSize-len(workingDex)
