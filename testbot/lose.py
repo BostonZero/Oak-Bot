@@ -1,0 +1,2 @@
+def lose():
+	pass
