@@ -1,27 +1,22 @@
-from asyncio.windows_events import NULL
 import copy
 import csv
 import logging
 import os
-from distutils.log import debug
-from operator import truediv
-from random import randrange
-from time import sleep
+from asyncio.windows_events import NULL
 
 import discord
+from discord.ext.commands import Bot
 from dotenv import load_dotenv
 
-import checks
-import dexFunc
-import out
 
 # LOADS THE .ENV FILE THAT RESIDES ON THE SAME LEVEL AS THE SCRIPT.
 load_dotenv()
+import funcs
 
 
 ##variables and stuff
 logging.basicConfig(filename= "debug.log", level=logging.DEBUG)
-fullDex = dexFunc.loadDex()
+fullDex = funcs.loadDex()
 logging.info("dex loaded")
 target = fullDex[0]
 guesses = list()
@@ -35,13 +30,11 @@ workingDex = fullDex.copy()
 ##functions
 
 
-
-
 def win():
-	pass
+	print("Dub Achieved")
 
 def lose():
-	pass
+	print("you are bad at this")
 
 
 
@@ -53,7 +46,7 @@ def lose():
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 # GETS THE CLIENT OBJECT FROM DISCORD.PY. CLIENT IS SYNONYMOUS WITH BOT.
-bot = discord.Client()
+bot = Bot(command_prefix=".")
 
 # EVENT LISTENER FOR WHEN THE BOT HAS SWITCHED FROM OFFLINE TO ONLINE.
 @bot.event
@@ -77,15 +70,36 @@ async def on_ready():
 @bot.event
 async def on_message(message):
 	# CHECKS IF THE MESSAGE THAT WAS SENT IS EQUAL TO "HELLO".
+	global target, guesses, guessTracker, workingDex, fullDex
 	if message.content == "hello":
 		# SENDS BACK A MESSAGE TO THE CHANNEL.
 		await message.channel.send("hey dirtbag")
 	if message.content == "ng":
-		if str(message.content).startswith("-guess "):
-			inputStr = message.content[7:]
+		await message.channel.send("starting new game!")
+		target = list()
+		logging.info("target nulled")
+		guesses.clear()
+		logging.info("guesses nulled")
+		guessTracker = 0
+		logging.info("guess tracker reset")
+		guessStat.clear()
+		for i in range(6):
+			guessStat.append([0,0,0,0,0,0])	
+		logging.info("guess stat reset")
+		workingDex = fullDex.copy()
+		logging.info("working dex reset")
+		target = funcs.pickTarget(fullDex)
+		await message.channel.send("i picked the target! Go ahead and guess")
+	if str(message.content).startswith("-guess "):
+		inputStr = message.content[7:]
 		try:
-			guess = dexFunc.getDexInfo(workingDex, inputStr)
-			guesses.append(guess)
+			guess = funcs.getDexInfo(workingDex, inputStr)
+			if guess != NULL:
+				guesses.append(guess)
+			else: 
+				logging.error("INPUT DOES NOT MATCH POKEMON NAME")
+				await message.channel.send("I've never encountered a pokemon by that name... Are you sure that's its name?")
+				return
 		except AttributeError:
 			logging.error("INPUT DOES NOT MATCH POKEMON NAME")
 			await message.channel.send("I've never encountered a pokemon by that name... Are you sure that's its name?")
@@ -96,30 +110,34 @@ async def on_message(message):
 		elif guessTracker == 5: 
 			lose()
 			return
-		checks.genCheck(guesses[guessTracker])
-		checks.typeCheck(guesses[guessTracker])
-		checks.heightCheck(guesses[guessTracker])
-		checks.weightCheck(guesses[guessTracker])
-		out.printGame()
+		cg = guesses[guessTracker]
+		funcs.genCheck(cg, target, guessStat, guessTracker)
+		funcs.typeCheck(cg, target, guessStat, guessTracker)
+		funcs.heightCheck(cg, target, guessStat, guessTracker)
+		funcs.weightCheck(cg, target, guessStat, guessTracker)
+		await funcs.printGame(guessTracker,guessStat,guesses, message)
+		guessTracker = guessTracker+1
+		print("guess complete, fail to get " + target[0])
 		
-@command.command(name='newgame')
-async def newgame(ctx, arg):
-	global target,guesses,guessTracker,workingDex,fullDex
-	await ctx.channel.send("starting new game!")
-	target = list()
-	logging.info("target nulled")
-	guesses.clear()
-	logging.info("guesses nulled")
-	guessTracker = 0
-	logging.info("guess tracker reset")
-	guessStat.clear()
-	for i in range(6):
-		guessStat.append([0,0,0,0,0,0])	
-	logging.info("guess stat reset")
-	workingDex = fullDex.copy()
-	logging.info("working dex reset")
-	target = dexFunc.pickTarget()
-	await ctx.channel.send("i picked the target! Go ahead and guess")
+# @bot.command()
+# async def newgame(ctx, arg):
+# 	print("newgame")
+# 	global target,guesses,guessTracker,workingDex,fullDex
+# 	await ctx.channel.send("starting new game!")
+# 	target = list()
+# 	logging.info("target nulled")
+# 	guesses.clear()
+# 	logging.info("guesses nulled")
+# 	guessTracker = 0
+# 	logging.info("guess tracker reset")
+# 	guessStat.clear()
+# 	for i in range(6):
+# 		guessStat.append([0,0,0,0,0,0])	
+# 	logging.info("guess stat reset")
+# 	workingDex = fullDex.copy()
+# 	logging.info("working dex reset")
+# 	target = funcs.pickTarget()
+# 	await ctx.channel.send("i picked the target! Go ahead and guess")
 
 
     
