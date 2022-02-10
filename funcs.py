@@ -61,7 +61,7 @@ async def printGame(guessTracker,guessStat,guesses, message, workingDex, fullDex
 				lineSet= lineSet + "🔼\t"
 			case 1:
 				lineSet= lineSet + "🔽\t"
-		lineSet= lineSet + guesses[num][0] +" (" + str(guessStat[num][5]) + "/" + str(len(fullDex) - len(workingDex))+ ")"
+		lineSet= lineSet + guesses[num][0] +" (" + str(guessStat[num][5]) + "/" + str(guessStat[num][6])+ ")"
 		outString= outString + lineSet
 	await message.channel.send(outString)
 
@@ -266,3 +266,4 @@ def cutDex(g, wd, guessStat, guessTracker, workingDex):
 	logging.info("old wd size: {a}\t new wd size: {b}\t elimation this round: {c}".format(a = str(oldSize), b = str(len(workingDex)),c = str(oldSize-len(workingDex))))
 	print("\n" + str(oldSize) + "-" + str(len(workingDex)) + " = " + str(oldSize-len(workingDex)) + " eliminated!")
 	guessStat[guessTracker][5] = oldSize-len(workingDex)
+	guessStat[guessTracker][6] = len(workingDex)

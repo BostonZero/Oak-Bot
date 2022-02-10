@@ -24,8 +24,8 @@ guesses = list()
 guessTracker = 0
 fullDexLength = len(fullDex)
 guessStat = list()
-for i in range(6):
-	guessStat.append([0,0,0,0,0,0])
+for i in range(7):
+	guessStat.append([0,0,0,0,0,0,0])
 workingDex = fullDex.copy()
 
 ##functions
@@ -43,12 +43,6 @@ async def lose(message, target, workingDex):
 		outStr = "remaining pokemon: "
 		for mon in workingDex:
 			outStr = outStr + mon[0] + ", "
-
-
-
-
-
-
 
 
 # GRAB THE API TOKEN FROM THE .ENV FILE.
@@ -83,7 +77,7 @@ async def on_message(message):
 	if message.content == "hello":
 		# SENDS BACK A MESSAGE TO THE CHANNEL.
 		await message.channel.send("hey dirtbag")
-	if message.content == "ng":
+	elif message.content == "-newgame":
 		await message.channel.send("starting new game!")
 		target = list()
 		logging.info("target nulled")
@@ -92,14 +86,15 @@ async def on_message(message):
 		guessTracker = 0
 		logging.info("guess tracker reset")
 		guessStat.clear()
-		for i in range(6):
-			guessStat.append([0,0,0,0,0,0])	
+		for i in range(7):
+			guessStat.append([0,0,0,0,0,0,0])	
 		logging.info("guess stat reset")
 		workingDex = fullDex.copy()
 		logging.info("working dex reset")
 		target = funcs.pickTarget(fullDex)
 		await message.channel.send("i picked the target! Go ahead and guess")
-	if str(message.content).startswith("-guess "):
+	elif str(message.content).startswith("-guess "):
+		print("guess command recognized")
 		inputStr = message.content[7:]
 		try:
 			guess = funcs.getDexInfo(fullDex, inputStr)
@@ -116,8 +111,8 @@ async def on_message(message):
 		if target == guesses[guessTracker]: 
 			await win(message, target)
 			return
-		elif guessTracker == 5: 
-			await lose(message,target,guesses,guessStat,workingDex)
+		elif guessTracker == 7: 
+			await lose(message, target, workingDex)
 			return
 		cg = guesses[guessTracker]
 		funcs.genCheck(cg, target, guessStat, guessTracker)
@@ -127,30 +122,23 @@ async def on_message(message):
 		funcs.cutDex(cg, workingDex.copy(), guessStat, guessTracker, workingDex)
 		await funcs.printGame(guessTracker,guessStat, guesses, message, workingDex,fullDex)
 		guessTracker = guessTracker+1
-		print("guess complete, fail to get " + target[0])
-		
-# @bot.command()
-# async def newgame(ctx, arg):
-# 	print("newgame")
-# 	global target,guesses,guessTracker,workingDex,fullDex
-# 	await ctx.channel.send("starting new game!")
-# 	target = list()
-# 	logging.info("target nulled")
-# 	guesses.clear()
-# 	logging.info("guesses nulled")
-# 	guessTracker = 0
-# 	logging.info("guess tracker reset")
-# 	guessStat.clear()
-# 	for i in range(6):
-# 		guessStat.append([0,0,0,0,0,0])	
-# 	logging.info("guess stat reset")
-# 	workingDex = fullDex.copy()
-# 	logging.info("working dex reset")
-# 	target = funcs.pickTarget()
-# 	await ctx.channel.send("i picked the target! Go ahead and guess")
-
-
-    
+		print("guess complete, fail to get " + target[0])	
+	elif str(message.content).startswith("-dex "):
+		print("dex command recognized")	
+		await message.channel.send("Let me check my PokeDex that I totally invented...")
+		temp = funcs.getDexInfo(fullDex, message.content[5:])
+		await message.channel.send("Name: {a}\tGen: {b}\tTypes: {c}/{d}\tHeight: {e}\tWeight:{f}".format(a=temp[0],b=str(temp[1]),c=temp[2],d=temp[3],e=str(temp[4]),f=str(temp[5])))
+	elif str(message.content).startswith("-cheat target "):
+		print("cheat command recognized")
+		await message.channel.send("cheat mode active")
+		target = funcs.getDexInfo(fullDex, message.content[14:])
+	elif message.content == "-credit":
+		print("credit command recognized")	
+		await message.channel.send("While I did make the bot, I didn't invent the game! Go show the original creator some love:\nhttps://squirdle.fireblend.com/\nhttps://github.com/fireblend/")
+	elif message.content == "-help":
+		print("help command recognized")
+		await message.channel.send("-newgame *starts a newgame*\n-guess [pokemon name] *guesses a pokemon*\n-credit *shows the original creator of the game <3*")
+   
 
 # EXECUTES THE BOT WITH THE SPECIFIED TOKEN. TOKEN HAS BEEN REMOVED AND USED JUST AS AN EXAMPLE.
 bot.run(DISCORD_TOKEN)
