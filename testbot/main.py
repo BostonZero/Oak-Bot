@@ -36,8 +36,14 @@ async def win(message, target):
 	await message.channel.send("YOU GOT IT!\n name: {a}\tgen: {b}\ttypes: {c}/{d}\theight: {e}\tweight: {f}\n you managed to narrow it down to {g} pokemon".format(a=target[0],b=target[1],c=target[2],d=target[3],e=target[4],f=target[5],g=guessStat[5][5]))
 
 
-async def lose(message, target):
-	print("you are bad at this")
+async def lose(message, target, workingDex):
+	print("loser")
+	await message.channel.send("Nope, i was thinking of \n name: {a}\tgen: {b}\ttypes: {c}/{d}\theight: {e}\tweight: {f}\n you managed to narrow it down to {g} pokemon".format(a=target[0],b=target[1],c=target[2],d=target[3],e=target[4],f=target[5],g=guessStat[5][5]))
+	if guessStat[5][5] < 50:
+		outStr = "remaining pokemon: "
+		for mon in workingDex:
+			outStr = outStr + mon[0] + ", "
+
 
 
 
@@ -96,7 +102,7 @@ async def on_message(message):
 	if str(message.content).startswith("-guess "):
 		inputStr = message.content[7:]
 		try:
-			guess = funcs.getDexInfo(workingDex, inputStr)
+			guess = funcs.getDexInfo(fullDex, inputStr)
 			if guess != NULL:
 				guesses.append(guess)
 			else: 
@@ -119,7 +125,7 @@ async def on_message(message):
 		funcs.heightCheck(cg, target, guessStat, guessTracker)
 		funcs.weightCheck(cg, target, guessStat, guessTracker)
 		funcs.cutDex(cg, workingDex.copy(), guessStat, guessTracker, workingDex)
-		await funcs.printGame(guessTracker,guessStat, guesses, message)
+		await funcs.printGame(guessTracker,guessStat, guesses, message, workingDex,fullDex)
 		guessTracker = guessTracker+1
 		print("guess complete, fail to get " + target[0])
 		

@@ -20,8 +20,8 @@ def pickTarget(fd):
 	logging.info("{a} selected as target".format(a = temp[0]))
 	return temp
 
-async def printGame(guessTracker,guessStat,guesses, message):
-	outString = "Gen\tType 1\tType 2\tHeight\tWeight\tName\teliminated"
+async def printGame(guessTracker,guessStat,guesses, message, workingDex, fullDex):
+	outString = "<:gen:941091577470783509>\t<:type:941091629933162547>\t<:type:941091629933162547>\t:straight_ruler:\t:scales:\t Name (eliminated/remaining)"
 	for num in range(guessTracker+1):
 		lineSet = "\n"
 		
@@ -61,7 +61,7 @@ async def printGame(guessTracker,guessStat,guesses, message):
 				lineSet= lineSet + "🔼\t"
 			case 1:
 				lineSet= lineSet + "🔽\t"
-		lineSet= lineSet + guesses[num][0] + str(guessStat[num][5])
+		lineSet= lineSet + guesses[num][0] +" (" + str(guessStat[num][5]) + "/" + str(len(fullDex) - len(workingDex))+ ")"
 		outString= outString + lineSet
 	await message.channel.send(outString)
 
